@@ -18,12 +18,12 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', service: 'api-productos' });
 });
 
-//Listar productos
+//listar productos
 app.get('/api/productos', (req, res) => {
     res.json(productos);
 });
 
-//Obtener un producto
+//obtener un producto
 app.get('/api/productos/:id', (req, res) => {
     const producto = productos.find(p => p.id === Number(req.params.id));
 
@@ -32,6 +32,50 @@ app.get('/api/productos/:id', (req, res) => {
     }
 
     res.json(producto);
+});
+
+//crear producto
+app.post('/api/productos', (req, res) => {
+    const { nombre, precio, stock } = req.body;
+
+    if (!nombre || precio === undefined) {
+        return res.status(400).json({ error: 'Nombre y precio son obligatorios' });
+    }
+
+    const nuevo = { id: siguienteId++, nombre, precio, stock: stock || 0 };
+    productos.push(nuevo);
+
+    res.status(201).json(nuevo);
+});
+
+//actualizar producto
+app.put('/api/productos/:id', (req, res) => {
+    const producto = productos.find(p => p.id === Number(req.params.id));
+
+    if (!producto) {
+        return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+
+    const { nombre, precio, stock } = req.body;
+
+    if (nombre !== undefined) producto.nombre = nombre;
+    if (precio !== undefined) producto.precio = precio;
+    if (stock !== undefined) producto.stock = stock;
+
+    res.json(producto);
+});
+
+//eliminar producto
+app.delete('/api/productos/:id', (req, res) => {
+    const indice = productos.findIndex(p => p.id === Number(req.params.id));
+
+    if (indice === -1) {
+        return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+
+    const eliminado = productos.splice(indice, 1)[0];
+
+    res.json({ mensaje: 'Producto eliminado', producto: eliminado });
 });
 
 const PORT = process.env.PORT || 3000;
